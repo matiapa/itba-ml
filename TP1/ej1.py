@@ -9,25 +9,28 @@ df = pd.read_csv('data/PreferenciasBritanicos.csv')
 def pre_analysis(data):
     fig,ax=plt.subplots(edgecolor='k')
     w=0.15
-    a=np.arange(len(data['Nacionalidad'].unique()))
+    a=np.arange(2)
     i = 0
+    
+    total1 = data[data['Nacionalidad'] == 'E'].shape[0]
+    total2 = data[data['Nacionalidad'] == 'I'].shape[0]
+    totals = [total1, total2]
+
     for attr in data.columns:
         if attr == 'Nacionalidad':
             continue
 
         # get the count of rows that match attr based on the class
         count = data.groupby('Nacionalidad')[attr].sum()
-        # get the count of rows that match class
-        total = data[attr].count()
 
         # calculate the probability of attr given class
-        p_attr_per_class = count / total
+        p_attr_per_class = count / totals
 
         # plot the probability
         ax.bar(a + i*w, p_attr_per_class, width=w, label=attr)
         i += 1
 
-    plt.xticks(a + 2*w, data['Nacionalidad'].unique())
+    plt.xticks(a + 2*w, ['E', 'I'])
     plt.xlabel('Nacionalidad')
     plt.ylabel('Probabilidad')
     plt.legend()
@@ -99,12 +102,14 @@ x2 = {
 }
 
 pre_analysis(df)
-best_block_size(df)
+# best_block_size(df)
 
-train, _ = cross_validation(df, k=5)
+# train, _ = cross_validation(df, k=5)
 
-max_prob, mult_prob = predict(x1, train, 'Nacionalidad')
-print('For the values {}\n the class with the greatest probability is: {} with an accuracy of {}%'.format(x1, max_prob, round(mult_prob[max_prob]*100, 2)))
+train = df
 
-max_prob, mult_prob = predict(x2, train, 'Nacionalidad')
-print('For the values {}\n the class with the greatest probability is: {} with an accuracy of {}%'.format(x2, max_prob, round(mult_prob[max_prob]*100, 2)))
+max_prob, mult_prob = predict(x1, train, 'Nacionalidad', laplace=False)
+print('For the values {}\n the class with the greatest probability is: {} with a probability of {}%'.format(x1, max_prob, round(mult_prob[max_prob]*100, 2)))
+
+max_prob, mult_prob = predict(x2, train, 'Nacionalidad', laplace=False)
+print('For the values {}\n the class with the greatest probability is: {} with a probability of {}%'.format(x2, max_prob, round(mult_prob[max_prob]*100, 2)))
