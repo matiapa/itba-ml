@@ -2,9 +2,9 @@ def laplace_correction(n, N, k):
     return (n + 1) / (N + k)
 
 def initialize_probabilities(data, class_header, laplace=False):
-    classes = data[class_header].unique()
-    prob_classes = {}
-    prob_attr_per_class = {}
+    classes = data[class_header].unique() # [I, E]
+    prob_classes = {} # P(class) {I: 0.5, E: 0.5}
+    prob_attr_per_class = {} # P(attr|class)
 
     # Class probabilties P(C)
     for c in classes:
@@ -41,7 +41,7 @@ def initialize_probabilities(data, class_header, laplace=False):
 
 # Predict
 def predict(x, data, class_header, laplace=False):
-    mult_prob = {}
+    mult_prob = {} # {I: P(x|I)P(I), E: P(x|E)P(E)}
 
     classes, p_classes, p_attr_per_class = initialize_probabilities(data, class_header, laplace)
 
@@ -54,22 +54,22 @@ def predict(x, data, class_header, laplace=False):
                 continue
 
             if x[attr] == 1:
-                mult_prob[c] *= p_attr_per_class[(c, attr)]
+                mult_prob[c] *= p_attr_per_class[(c, attr)] # P(a|C)
             else:
-                mult_prob[c] *= (1 - p_attr_per_class[(c, attr)])
+                mult_prob[c] *= (1 - p_attr_per_class[(c, attr)]) # P(!a|C)
 
         mult_prob[c] *= p_classes[c]
 
     # Return the class with the highest hipothesis probability
     max_prob = max(mult_prob, key=mult_prob.get)
 
-    # Get P(a) to then divide and get the posteriori probability
-    # P(a) = P(a|C1) * P(C1) + P(a|C2) * P(C2)
-    p_a = sum(mult_prob.values())
+    # Get P(x) to then divide and get the posteriori probability
+    # P(x) = P(a|C1) * P(C1) + P(a|C2) * P(C2)
+    p_x = sum(mult_prob.values())
 
     # Transform the V of the hipotesis to a posteriori probability
     for c in classes:
-        mult_prob[c] /= p_a
+        mult_prob[c] /= p_x
 
     return max_prob, mult_prob
 

@@ -86,8 +86,8 @@ def best_block_size(data):
     plt.show()
 
 x1 = {
-    'scones': 1,
-    'cerveza': 0,
+    'scones': 1, # P(a|C)
+    'cerveza': 0, #P(-a|C)
     'wiskey': 1,
     'avena': 1,
     'futbol': 0,
