@@ -73,6 +73,7 @@ def fill_dictionary(df):
     dictionary = {} 
     total_words_by_category = {} #Deportes: 100, Economía: 50
     total_words = 0
+
     for index, row in df.iterrows():
         words = row['title'].split(' ')
         total_words += len(words)
@@ -138,7 +139,7 @@ def analyze_title(all_categories, title, dictionary, total_words_by_category, to
             max_probability = probabilities_by_category[category]
             category_with_max_probability = category
     # print("The category with the highest probability is: {} with a probability of {}".format(category_with_max_probability, round(max_probability*100, 2)))
-    return category_with_max_probability
+    return category_with_max_probability, probabilities_by_category
 
 
 def get_metrics(all_categories, dictionary, total_words_by_category, total_words, test):
@@ -173,7 +174,7 @@ def get_metrics(all_categories, dictionary, total_words_by_category, total_words
 def cross_validation(data, k, all_categories):
     data = data.sample(frac=1).reset_index(drop=True)
     block = data.shape[0] // k
-    best_block = -1
+    best_block = []
     test = []
     best_block_accuracy = 0
     for i in range(k):
@@ -184,7 +185,7 @@ def cross_validation(data, k, all_categories):
 
         correct = 0
         for _, row in test.iterrows():
-            category = analyze_title(all_categories, row['title'], dictionary, total_words_by_category, total_words)
+            category, probability = analyze_title(all_categories, row['title'], dictionary, total_words_by_category, total_words)
             if category == row['category']:
                 correct += 1
 
