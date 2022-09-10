@@ -3,6 +3,7 @@ import pandas as pd
 import json
 import seaborn as sn
 import matplotlib.pyplot as plt
+import numpy as np
 
 def laplace_correction(n, N, k):
     return (n + 1) / (N + k)
@@ -170,6 +171,7 @@ def get_metrics(all_categories, dictionary, total_words_by_category, total_words
                     tn_metrics[c] += 1
         
     return tp_metrics, fp_metrics, fn_metrics, tn_metrics
+
 
 def cross_validation(data, k, all_categories):
     data = data.sample(frac=1).reset_index(drop=True)
