@@ -1,77 +1,123 @@
+from random import random
 import pandas as pd
 import numpy as np
 from typing import List
+import graphviz
 
-from decision_tree.node import Node, TerminalNode, AttributeNode, TerminalState
-from decision_tree.attribute import Attribute
-from decision_tree.utils import cprint
-
+from node import Node, TerminalNode, AttributeNode
+from attribute import Attribute
 
 class DecisionTree:
 
-    def __build_tree(self, df: pd.DataFrame, attributes: List[Attribute], targetAttr: Attribute, maxDepth: int, d: int) -> Node:
-        if d > maxDepth:
-            # cprint(f'Undiscriminated', 'r', d)
-            return TerminalNode(state=TerminalState.UNDETERMINED)
+    def __init__(self, maxDepth, minSamples):
+        self.maxDepth = maxDepth
+        self.minSamples = minSamples
 
-        if len(df[df[targetAttr.label] == '0']) == len(df):
-            # cprint(f'Discriminated: Negative', 'g', d)
-            newNode = TerminalNode(state=TerminalState.NEGATIVE)
-        
-        elif len(df[df[targetAttr.label] == '1']) == len(df):
-            # cprint(f'Discriminated: Positive', 'g', d)
-            newNode = TerminalNode(state=TerminalState.POSITIVE)
+
+    def __build_tree(self, df: pd.DataFrame, attributes: List[Attribute], targetAttr: Attribute, d: int) -> Node:
+        if len(df) == 0:
+            return TerminalNode(value = '?')
+
+        if len(df[targetAttr.label].unique()) == 1 or d > self.maxDepth or len(df) <= self.minSamples:
+            return TerminalNode(value = df[targetAttr.label].mode()[0])
         
         else:
             gains = map(lambda a : a.get_gain(df, targetAttr), attributes)
             best_attr = attributes[ np.argmax(gains) ]
-
-            # cprint(f'Exploring attribute: {best_attr.label}', 'b', d)
             
             newNode = AttributeNode(attribute=best_attr)
 
             for value in best_attr.values:
-                # cprint(f'Value: {value}', 'y', d)
-
                 remainingAttributes = list(attributes)
                 remainingAttributes.remove(best_attr)
 
-                subtree = self.__build_tree(df[df[best_attr.label] == value], remainingAttributes, targetAttr, maxDepth, d+1)
+                subtree = self.__build_tree(df[df[best_attr.label] == value], remainingAttributes, targetAttr, d+1)
 
                 newNode.children[value] = subtree
 
-        return newNode
+            return newNode
 
 
-    def train(self, df: pd.DataFrame, attributes: List[Attribute], targetAttr: Attribute, maxDepth: int):
-        self.tree : Node = self.__build_tree(df, attributes, targetAttr, maxDepth, 0)
+    def train(self, samples: pd.DataFrame, attributes: List[Attribute], targetAttr: Attribute):
+        self.root : Node = self.__build_tree(samples, attributes, targetAttr, 0)
 
+    # -------------------------------------------------------------
 
-    def __evaluate(self, sample: dict, node: Node) -> TerminalState:
+    def __evaluate(self, sample: dict, node: Node) -> str:
         if type(node) is TerminalNode:
-            return node.state
+            return node.value
 
         if type(node) is AttributeNode:
             value = sample[ node.attribute.label ]
             return self.__evaluate(sample, node.children[ value ])
 
-    def evaluate(self, sample: dict):
-        return self.__evaluate(sample, self.tree)
+    def evaluate(self, sample: dict) -> str:
+        return self.__evaluate(sample, self.root)
 
+    # -------------------------------------------------------------
 
-    def __print_tree(self, node: Node, d: int):
-        if type(node) is TerminalNode:
-            if node.state in [TerminalState.POSITIVE, TerminalState.NEGATIVE]:
-                cprint(f'{node.state.name}', 'g', d)
-            # else:
-            #     cprint(f'{node.state.name}', 'r', d)
+    def __draw_node(self, node: Node, graph: graphviz.Digraph) -> str:
+        if type(node) is TerminalNode:   
+            node_label = node.value
+        else:
+            node_label = node.attribute.label
+        
+        node_id = f'{random()}'
+
+        graph.node(name=node_id, label=node_label)
 
         if type(node) is AttributeNode:
-            cprint(f'{node.attribute.label}', 'b', d)
+            
+            for attr_value in node.attribute.values:
+                child_node = node.children[attr_value]
+                
+                child_id = self.__draw_node(child_node, graph)
 
-            for value in node.attribute.values:
-                cprint(f'= {value}', 'y', d)
-                self.__print_tree(node.children[value], d+1)
+                graph.edge(node_id, child_id, label=attr_value)
+        
+        return node_id
 
-    def print_tree(self):
-        self.__print_tree(self.tree, 0)
+    def draw_tree(self):
+        graph = graphviz.Digraph()
+
+        self.__draw_node(self.root, graph)
+
+        graph.render('out/graph', format='png', cleanup=True)
+
+
+    # -------------------------------------------------------------
+
+
+    def __trim_branch(self, root: Node, df: pd.DataFrame, targetAttr: Attribute) -> Node:
+        if type(root) is TerminalNode:
+            return root
+
+        temp_tree = DecisionTree(None, None)
+        temp_tree.root = root
+        untrimmed_corrects = 0
+
+        for _, sample in df.iterrows():
+            sample = sample.to_dict()
+            prediction = temp_tree.evaluate(sample)
+
+            if prediction == sample[targetAttr.label]:
+                untrimmed_corrects += 1
+
+        mode = df[targetAttr.label].mode()[0]
+        trimmed_corrects = len(df[df[targetAttr.label] == mode])
+
+        if trimmed_corrects > untrimmed_corrects:
+            return TerminalNode(value = mode)
+
+        else:
+            new_children = []
+
+            for attr_value, child in root.children:
+                new_child = self.__trim_branch(child, df[df[targetAttr.label] == attr_value])
+                new_children.append(new_child)
+            root.children = new_children
+
+            return root
+
+    def trim(self, df: pd.DataFrame, targetAttr: Attribute):
+        self.root = self.__trim_branch(self, df, targetAttr)

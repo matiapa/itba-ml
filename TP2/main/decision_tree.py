@@ -1,25 +1,27 @@
 import sys
 sys.path.append("..")
-sys.path.append("../..")
 
 import pandas as pd
 
 from decision_tree.attribute import Attribute
 from decision_tree.tree import DecisionTree
-from decision_tree.node import TerminalState
+
 
 # -------------------- DEFINITIONS --------------------
 
 def srange(s, e):
     return list(map(lambda n : f'{n}', range(s, e+1)))
 
+def precision(tree, df, targetAttr):
+    return round(sum([1 if tree.evaluate(s) == s[targetAttr.label] else 0 for _,s in df.iterrows()]) / len(df) * 100)
+
 attributes = [
     Attribute('Account Balance', srange(1,4)),
-    # Attribute('Duration of Credit (month)', []) --- Infinite values?
+    Attribute('Duration of Credit (month)', srange(0,3)),
     Attribute('Payment Status of Previous Credit', srange(0,4)),
 
     Attribute('Purpose', srange(0,10)),
-    # Attribute('Credit Amount', []) --- Infinite values?
+    Attribute('Credit Amount', srange(0,3)),
     Attribute('Value Savings/Stocks', srange(1,5)),
     Attribute('Length of current employment', srange(1,5)),
 
@@ -29,7 +31,7 @@ attributes = [
     Attribute('Duration in Current address', srange(1,4)),
 
     Attribute('Most valuable available asset', srange(1,4)),
-    # Attribute('Age (years)', []) --- Infinite values?
+    Attribute('Age (years)', srange(0,3)),
     Attribute('Concurrent Credits', srange(1,3)),
     Attribute('Type of apartment', srange(1,3)),
 
@@ -41,30 +43,41 @@ attributes = [
     Attribute('Foreign Worker', srange(1,2)),
 ]
 
-targetAttribute = Attribute('Creditability', srange(0,1))
+targetAttr = Attribute('Creditability', srange(0,1))
 
-tree = DecisionTree()
+tree = DecisionTree(maxDepth = 3, minSamples = 10)
 
 
-# -------------------- TRAINING --------------------
+# -------------------- DATA PARSING --------------------
 
-df = pd.read_csv('../data/german_credit.csv')
+df = pd.read_csv('../data/german_credit_proc.csv')
 
 for column in df.columns:
     df[column] = df[column].map(str)
 
-tree.train(df, attributes, targetAttribute, 3)
+df = df.sample(frac=1).reset_index(drop=True)
 
-tree.print_tree()
+trainSet = df.iloc[0:900]
+testSet = df.iloc[900:1000]
+
+
+# -------------------- TRAINING --------------------
+
+tree.train(trainSet, attributes, targetAttr)
+
+tree.draw_tree()
 
 
 # -------------------- TESTING --------------------
 
-result1 = tree.evaluate({'Account Balance': '1', 'Payment Status of Previous Credit': '0', 'Purpose': '0'})
+print('No trimming')
 
-result2 = tree.evaluate({'Account Balance': '1', 'Payment Status of Previous Credit': '1', 'Purpose': '1'})
+print(f'> Train set: {precision(tree, trainSet, targetAttr)}%')
+print(f'> Test set:  {precision(tree, testSet, targetAttr)}%')
 
-if result1 == TerminalState.NEGATIVE and result2 == TerminalState.POSITIVE:
-    print('Test passed')
-else:
-    print('Test failed')
+tree.trim(testSet, targetAttr)
+
+print('With trimming')
+
+print(f'> Train set: {precision(tree, trainSet, targetAttr)}%')
+print(f'> Test set:  {precision(tree, testSet, targetAttr)}%')
