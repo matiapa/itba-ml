@@ -45,7 +45,7 @@ attributes = [
 
 targetAttr = Attribute('Creditability', srange(0,1))
 
-tree = DecisionTree(maxDepth = 3, minSamples = 10)
+tree = DecisionTree(maxDepth = 8, minSamples = 0)
 
 
 # -------------------- DATA PARSING --------------------
