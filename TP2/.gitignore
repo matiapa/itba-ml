@@ -1,0 +1,6 @@
+*.png
+.idea
+out/
+/decision_tree/out/
+/main/out/
+out

@@ -1,8 +1,6 @@
 from __future__ import annotations
 from typing import Dict
-from enum import Enum
-
-from attribute import Attribute
+from decision_tree.attribute import Attribute
 
 
 class Node:
