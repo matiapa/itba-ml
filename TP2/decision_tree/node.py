@@ -6,19 +6,21 @@ from decision_tree.attribute import Attribute
 class Node:
 
     def __init__(self) -> None:
-        pass
+        self.children = None
+        self.value = None
+        self.attribute = None
 
 
 class AttributeNode(Node):
 
     def __init__(self, attribute: Attribute):
         super().__init__()
-        self.children : Dict[str, Node] = {}
+        self.children: Dict[str, Node] = {}
         self.attribute = attribute
 
 
 class TerminalNode(Node):
 
-    def __init__(self, value: str):
+    def __init__(self, value: int):
         super().__init__()
         self.value = value

@@ -33,10 +33,10 @@ class DecisionTree:
             newNode = AttributeNode(attribute=best_attr)
 
             for value in best_attr.values:
-                remainingAttributes = list(attributes)
-                remainingAttributes.remove(best_attr)
+                remaining_attributes = list(attributes)
+                remaining_attributes.remove(best_attr)
 
-                subtree = self.__build_tree(df[df[best_attr.label] == value], remainingAttributes, target_attr, d + 1)
+                subtree = self.__build_tree(df[df[best_attr.label] == value], remaining_attributes, target_attr, d + 1)
 
                 newNode.children[value] = subtree
 
@@ -82,12 +82,12 @@ class DecisionTree:
 
         return node_id
 
-    def draw_tree(self):
+    def draw_tree(self, filename: str = 'graph'):
         graph = graphviz.Digraph()
 
         self.__draw_node(self.root, graph)
 
-        graph.render('out/graph', format='png', cleanup=True)
+        graph.render('out/'+filename, format='png', cleanup=True)
 
     # -------------------------------------------------------------
 

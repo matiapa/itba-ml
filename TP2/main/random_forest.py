@@ -1,15 +1,13 @@
 import sys
-import pandas as pd
+import numpy as np
 
 sys.path.append("..")
 
 from decision_tree.attribute import Attribute
 from decision_tree.tree import DecisionTree
-from decision_tree.utils import srange, precision
-
+from decision_tree.utils import srange
 
 # -------------------- DEFINITIONS --------------------
-
 
 attributes = [
     Attribute('Account Balance', srange(1, 4)),
@@ -41,40 +39,20 @@ attributes = [
 
 target_attr = Attribute('Creditability', srange(0, 1))
 
-tree = DecisionTree(max_depth=8, min_samples=100)
 
-# -------------------- DATA PARSING --------------------
+def random_forest(df, sample_size, test_frac, max_depth=4, min_samples=0, n_trees=64):
+    trees = []
 
-df = pd.read_csv('../data/german_credit_proc.csv', dtype=object)
+    train_set = df.sample(frac=1).reset_index(drop=True)
 
-for column in df.columns:
-    df[column] = df[column].map(str)
+    for n in range(n_trees):
+        # print(f"Tree {n + 1}/{n_trees}")
+        trees.append(DecisionTree(max_depth=max_depth, min_samples=min_samples))
 
-df = df.sample(frac=1).reset_index(drop=True)
+        # get random sample from train_set with replacement
+        aux = train_set.sample(n=sample_size, replace=True)
 
-train_size = 0.9
-train_set = df.iloc[0:int(len(df) * train_size)]
-test_set = df.iloc[int(len(df) * train_size):]
+        # train tree
+        trees[n].train(aux, attributes, target_attr)
 
-# train_set = df.iloc[0:900]
-# test_set = df.iloc[900:1000]
-
-# -------------------- TRAINING --------------------
-
-tree.train(train_set, attributes, target_attr)
-
-tree.draw_tree()
-
-# -------------------- TESTING --------------------
-
-print('No trimming')
-
-print(f'> Train set: {precision(tree, train_set, target_attr)}%')
-print(f'> Test set:  {precision(tree, test_set, target_attr)}%')
-
-tree.trim(test_set, target_attr)
-
-print('With trimming')
-
-print(f'> Train set: {precision(tree, train_set, target_attr)}%')
-print(f'> Test set:  {precision(tree, test_set, target_attr)}%')
+    return trees

@@ -32,7 +32,4 @@ class Attribute:
 
         gain = target_gain - aux
 
-        # if gain == target_gain:
-        #     print("Gain is equal to target gain for attribute: " + self.label)
-
         return gain
