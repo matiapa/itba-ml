@@ -11,15 +11,15 @@ from decision_tree.attribute import Attribute
 class DecisionTree:
 
     def __init__(self, max_depth, min_samples):
-        self.maxDepth = max_depth
-        self.minSamples = min_samples
+        self.max_depth = max_depth
+        self.min_samples = min_samples
         self.root = None
 
     def __build_tree(self, df: pd.DataFrame, attributes: List[Attribute], target_attr: Attribute, d: int) -> Node:
         if len(df) == 0:
             return TerminalNode(value='?')
 
-        if len(df[target_attr.label].unique()) == 1 or d > self.maxDepth or len(df) <= self.minSamples:
+        if len(df[target_attr.label].unique()) == 1 or d > self.max_depth or len(df) <= self.min_samples:
             return TerminalNode(value=df[target_attr.label].mode()[0])
 
         else:
