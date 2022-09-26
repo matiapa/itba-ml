@@ -6,104 +6,7 @@ from matplotlib import pyplot as plt
 
 sys.path.append("..")
 from decision_tree.random_forest import random_forest
-from decision_tree.tree import DecisionTree
-from decision_tree.utils import precision
 from main.attributes import attributes, target_attr
-
-
-def cross_validation(df, max_depth=8, min_samples=100, k=5):
-    block_size = len(df) // k
-    best_acc = 0
-    best_train_block = []
-    best_test_block = []
-    for i in range(k):
-        test_set = df.iloc[i * block_size: (i + 1) * block_size]
-        train_set = df.drop(test_set.index)
-        tree = DecisionTree(max_depth, min_samples)
-        tree.train(train_set, attributes, target_attr)
-        acc = precision(tree, test_set, target_attr)
-        if acc > best_acc:
-            best_acc = acc
-            best_train_block = train_set
-            best_test_block = test_set
-    return best_acc, best_train_block, best_test_block
-
-
-def cross_validation_analysis():
-    k = [4, 5, 6, 7, 8, 9, 10, 11]
-    df = pd.read_csv('../data/german_credit_proc.csv', dtype=object)
-    precisions = []
-
-    for block in k:
-        print("Block: " + str(block))
-        # ! Guarda porque la cantidad de min samples afecta el resultado
-        best_acc, _, _ = cross_validation(df, k=block, min_samples=100, max_depth=8)
-        precisions.append(best_acc)
-
-    plt.plot(k, precisions)
-    plt.xlabel('k')
-    plt.ylabel('Precisión (%)')
-    plt.savefig('out/cross_validation.png')
-    plt.show()
-
-
-cross_validation_analysis()
-
-
-def tree_height_precision():
-    max_depth = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-    df = pd.read_csv('../data/german_credit_proc.csv', dtype=object)
-    k = 5
-
-    train_precisions = []
-    test_precisions = []
-    for depth in max_depth:
-        print("Depth: " + str(depth))
-        tree = DecisionTree(max_depth=depth, min_samples=0)
-
-        _, train_set, test_set = cross_validation(df, depth, 0, k)
-
-        tree.train(train_set, attributes, target_attr)
-        test_precisions.append(precision(tree, test_set, target_attr))
-        train_precisions.append(precision(tree, train_set, target_attr))
-
-    plt.plot(max_depth, test_precisions, label='Test Set')
-    plt.plot(max_depth, train_precisions, label='Train Set')
-    plt.xlabel('Profundidad máxima')
-    plt.ylabel('Precisión (%)')
-    plt.legend()
-    plt.savefig('out/height_precision.png')
-    plt.show()
-
-
-# tree_height_precision()
-
-
-def min_samples_analysis():
-    df = pd.read_csv('../data/german_credit_proc.csv', dtype=object)
-    min_samples = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-    k = 5
-
-    train_precisions = []
-    test_precisions = []
-
-    for size in min_samples:
-        tree = DecisionTree(max_depth=3, min_samples=size)
-        _, train_set, test_set = cross_validation(df, 3, size, k)
-        tree.train(train_set, attributes, target_attr)
-        train_precisions.append(precision(tree, train_set, target_attr))
-        test_precisions.append(precision(tree, test_set, target_attr))
-
-    plt.plot(min_samples, train_precisions, label='Train Set')
-    plt.plot(min_samples, test_precisions, label='Test Set')
-    plt.xlabel('Mínimo de muestras')
-    plt.ylabel('Precisión (%)')
-    plt.legend()
-    plt.savefig('out/min_samples.png')
-    plt.show()
-
-
-# min_samples_analysis()
 
 
 def sample_size_analysis():
@@ -167,9 +70,6 @@ def random_forest_analysis():
 
     print("Matched: " + str(matches) + " not found " + str(not_found))
     print("Precision of the random forest: " + str(matches / len(test_set)))
-
-
-# random_forest_analysis()
 
 
 def variables_analysis():
@@ -248,7 +148,3 @@ def violin_analysis():
         plt.legend(*zip(*labels), loc=2)
         plt.tight_layout()
         plt.show()
-
-# violin_analysis()
-# test()
-# parallel_analysis()
