@@ -1,6 +1,6 @@
 
 
-def parsing_file(file_name):
+def parsing_file(file_name,  normalize_variables = True):
     #parse reviews_sentiment.csv file 
     #return a list of tuples (review_title, review_text, wordcount, titleSentiment, textSentiment, starRating, sentimentValue)
     # values wordcount and sentimentValue are already normalized 
@@ -25,26 +25,36 @@ def parsing_file(file_name):
         text = line[1]
 
         wordcount = int(line[2])
-        if min_wordCount == None or min_wordCount > wordcount:
-            min_wordCount = wordcount
-        if max_wordCount == None or max_wordCount < wordcount:
-            max_wordCount = wordcount
+        if normalize_variables:
+            if min_wordCount == None or min_wordCount > wordcount:
+                min_wordCount = wordcount
+            if max_wordCount == None or max_wordCount < wordcount:
+                max_wordCount = wordcount
 
         titleSentiment = line[3]
-        if(titleSentiment == ''):
-            titleSentiment = 0.5
-        if(titleSentiment == "positive"):
-            titleSentiment = 1
-        if(titleSentiment == "negative"):
-            titleSentiment = 0
+        if normalize_variables:
+            if(titleSentiment == ''):
+                titleSentiment = 0.5
+            if(titleSentiment == "positive"):
+                titleSentiment = 1
+            if(titleSentiment == "negative"):
+                titleSentiment = 0
+        else:
+            if(titleSentiment == ''):
+                titleSentiment = 0
+            if(titleSentiment == "positive"):
+                titleSentiment = 1
+            if(titleSentiment == "negative"):
+                titleSentiment = -1
         textSentiment = line[4]
         starRating = line[5]
        
         sentimentValue = float(line[6])
-        if min_sentimentValue == None or min_sentimentValue > sentimentValue:
-            min_sentimentValue = sentimentValue
-        if max_sentimentValue == None or max_sentimentValue < sentimentValue:
-            max_sentimentValue = sentimentValue
+        if normalize_variables:
+            if min_sentimentValue == None or min_sentimentValue > sentimentValue:
+                min_sentimentValue = sentimentValue
+            if max_sentimentValue == None or max_sentimentValue < sentimentValue:
+                max_sentimentValue = sentimentValue
         #create tuple
         tuple = [title, text, wordcount, titleSentiment, textSentiment, starRating, sentimentValue]
         #append tuple to list
