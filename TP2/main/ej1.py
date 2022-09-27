@@ -1,10 +1,10 @@
 import pandas as pd
 import seaborn as sn
+import sys
 from matplotlib import pyplot as plt
-
+sys.path.append("..")
 from decision_tree.random_forest import random_forest
-from decision_tree.tree import DecisionTree
-from decision_tree.utils import precision
+from decision_tree.utils import precision, cross_validation
 from main.attributes import attributes, target_attr
 
 
@@ -31,7 +31,10 @@ def create_confusion_matrix(metrics, total, name='confusion_matrix', title='Matr
 
 def algorithms_confusion_matrix_analysis():
     df = pd.read_csv('../data/german_credit_proc.csv', dtype=object)
-    k = 8
+    df = df.sample(frac=1).reset_index(drop=True)
+    k = 10
+    max_depth = 3
+    min_samples = 55
 
     metrics = {
         'normal': {
@@ -49,7 +52,7 @@ def algorithms_confusion_matrix_analysis():
     }
 
     # Cross validation
-    _, tree, train_set, test_set = cross_validation(df, 8, 100, k)
+    _, tree, train_set, test_set = cross_validation(df, attributes, target_attr, max_depth, min_samples, k)
     for index, row in test_set.iterrows():
         result = tree.evaluate(row)
         if str(result) == str(row['Creditability']):
@@ -67,7 +70,7 @@ def algorithms_confusion_matrix_analysis():
 
     # Random Forest
     sample_size = int(len(train_set) * 0.7)
-    trees = random_forest(train_set, attributes, target_attr, sample_size, max_depth=8, min_samples=50, n_trees=64)
+    trees = random_forest(train_set, attributes, target_attr, sample_size, max_depth=max_depth, min_samples=min_samples, n_trees=64)
     for index, row in test_set.iterrows():
         results = {}
         for tree in trees:
@@ -92,17 +95,19 @@ def algorithms_confusion_matrix_analysis():
     create_confusion_matrix(metrics['random_forest'], len(test_set), name='random_forest_matrix', title='Matriz de Confusión: Random Forest')
 
 
+algorithms_confusion_matrix_analysis()
+
+
 def min_samples_analysis():
     df = pd.read_csv('../data/german_credit_proc.csv', dtype=object)
     min_samples = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-    k = 5
+    k = 10
 
     train_precisions = []
     test_precisions = []
 
     for size in min_samples:
-        tree = DecisionTree(max_depth=3, min_samples=size)
-        _, tree, train_set, test_set = cross_validation(df, 3, size, k)
+        _, tree, train_set, test_set = cross_validation(df, attributes, target_attr, 3, size, k)
         train_precisions.append(precision(tree, train_set, target_attr))
         test_precisions.append(precision(tree, test_set, target_attr))
 
@@ -115,38 +120,46 @@ def min_samples_analysis():
     plt.show()
 
 
+# min_samples_analysis()
+
+
 def tree_height_precision():
-    max_depth = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    max_depth = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     df = pd.read_csv('../data/german_credit_proc.csv', dtype=object)
-    k = 5
+    df = df.sample(frac=1).reset_index(drop=True)
+    k = 10
 
     train_precisions = []
     test_precisions = []
     for depth in max_depth:
         print("Depth: " + str(depth))
 
-        _, tree, train_set, test_set = cross_validation(df, depth, 0, k)
+        _, tree, train_set, test_set = cross_validation(df, attributes, target_attr, depth, 0, k)
         test_precisions.append(precision(tree, test_set, target_attr))
         train_precisions.append(precision(tree, train_set, target_attr))
 
     plt.plot(max_depth, test_precisions, label='Test Set')
     plt.plot(max_depth, train_precisions, label='Train Set')
-    plt.xlabel('Profundidad máxima')
+    plt.xlabel('Cantidad de nodos')
     plt.ylabel('Precisión (%)')
     plt.legend()
-    plt.savefig('out/height_precision.png')
+    plt.savefig('out/height_precision_50.png')
     plt.show()
+
+
+# tree_height_precision()
 
 
 def cross_validation_analysis():
     k = [4, 5, 6, 7, 8, 9, 10, 11]
     df = pd.read_csv('../data/german_credit_proc.csv', dtype=object)
+    df = df.sample(frac=1).reset_index(drop=True)
     precisions = []
 
     for block in k:
         print("Block: " + str(block))
         # ! Guarda porque la cantidad de min samples afecta el resultado
-        best_acc, _, _, _ = cross_validation(df, k=block, min_samples=100, max_depth=8)
+        best_acc, _, _, _ = cross_validation(df, attributes, target_attr, k=block, min_samples=50, max_depth=8)
         precisions.append(best_acc)
 
     plt.plot(k, precisions)
@@ -156,21 +169,5 @@ def cross_validation_analysis():
     plt.show()
 
 
-def cross_validation(df, max_depth=8, min_samples=100, k=5):
-    block_size = len(df) // k
-    best_acc = 0
-    best_tree = None
-    best_test_set = None
-    best_train_set = None
-    for i in range(k):
-        test_set = df.iloc[i * block_size: (i + 1) * block_size]
-        train_set = df.drop(test_set.index)
-        tree = DecisionTree(max_depth, min_samples)
-        tree.train(train_set, attributes, target_attr)
-        acc = precision(tree, test_set, target_attr)
-        if acc > best_acc:
-            best_acc = acc
-            best_tree = tree
-            best_test_set = test_set
-            best_train_set = train_set
-    return best_acc, best_tree, best_train_set, best_test_set
+# cross_validation_analysis()
+

@@ -11,7 +11,6 @@ def get_dataset_entropy(df: pd.DataFrame, target_attr: Attribute):
     pp = len(df[df[target_attr.label] == '1']) / len(df)
     pn = len(df[df[target_attr.label] == '0']) / len(df)
 
-    # print(res)
     return - (pp * log(pp, 2) if pp != 0 else 0) - (pn * log(pn, 2) if pn != 0 else 0)
 
 

@@ -91,36 +91,64 @@ class DecisionTree:
 
     # -------------------------------------------------------------
 
+    # def __trim_branch(self, root: Node, df: pd.DataFrame, target_attr: Attribute) -> Node:
+    #     if type(root) is TerminalNode:
+    #         return root
+    #
+    #     temp_tree = DecisionTree(None, None)
+    #     temp_tree.root = root
+    #     untrimmed_corrects = 0
+    #
+    #     for _, sample in df.iterrows():
+    #         sample = sample.to_dict()
+    #         prediction = temp_tree.evaluate(sample)
+    #
+    #         if prediction == sample[target_attr.label]:
+    #             untrimmed_corrects += 1
+    #
+    #     mode = df[target_attr.label].mode()[0]
+    #     trimmed_corrects = len(df[df[target_attr.label] == mode])
+    #
+    #     if trimmed_corrects > untrimmed_corrects:
+    #         return TerminalNode(value=mode)
+    #
+    #     else:
+    #         new_children = {}
+    #
+    #         for attr_value, child in root.children:
+    #             new_child = self.__trim_branch(child, df[df[target_attr.label] == attr_value], target_attr)
+    #             new_children[attr_value] = new_child
+    #         root.children = new_children
+    #
+    #         return root
+
     def __trim_branch(self, root: Node, df: pd.DataFrame, target_attr: Attribute) -> Node:
-        if type(root) is TerminalNode:
+
+        if type(root) is TerminalNode or len(df) == 0:
             return root
 
-        temp_tree = DecisionTree(None, None)
-        temp_tree.root = root
-        untrimmed_corrects = 0
+        final_parent_node = True
+        for key, child in root.children.items():
+            if type(child) is not TerminalNode:
+                child = self.__trim_branch(child, df[df[root.attribute.label] == key], target_attr)
+                root.children[key] = child
+                if type(child) is not TerminalNode:
+                    final_parent_node = False
 
-        for _, sample in df.iterrows():
-            sample = sample.to_dict()
-            prediction = temp_tree.evaluate(sample)
+        if final_parent_node:
+            mode = df[target_attr.label].mode()[0]
+            trim_errors = len(df[df[target_attr.label] != mode])
 
-            if prediction == sample[target_attr.label]:
-                untrimmed_corrects += 1
+            tree_errors = 0
+            for key, child in root.children.items():
+                tree_errors += len(df[(df[root.attribute.label] == key) & (df[target_attr.label] != child.value)])
 
-        mode = df[target_attr.label].mode()[0]
-        trimmed_corrects = len(df[df[target_attr.label] == mode])
+            if tree_errors < trim_errors:
+                return root
 
-        if trimmed_corrects > untrimmed_corrects:
-            return TerminalNode(value=mode)
+            return TerminalNode(mode)
 
-        else:
-            new_children = []
-
-            for attr_value, child in root.children:
-                new_child = self.__trim_branch(child, df[df[target_attr.label] == attr_value], target_attr)
-                new_children.append(new_child)
-            root.children = new_children
-
-            return root
+        return root
 
     def trim(self, df: pd.DataFrame, target_attr: Attribute):
         self.root = self.__trim_branch(self.root, df, target_attr)

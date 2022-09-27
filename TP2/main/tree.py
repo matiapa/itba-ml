@@ -2,25 +2,20 @@ import sys
 
 import pandas as pd
 
-from main.attributes import attributes, target_attr
+from attributes import target_attr, attributes
 
 sys.path.append("..")
 
 from decision_tree.tree import DecisionTree
 from decision_tree.utils import precision
 
-
 # -------------------- DEFINITIONS --------------------
 
-tree = DecisionTree(max_depth=8, min_samples=100)
+tree = DecisionTree(max_depth=3, min_samples=50)
 
 # -------------------- DATA PARSING --------------------
 
 df = pd.read_csv('../data/german_credit_proc.csv', dtype=object)
-
-for column in df.columns:
-    df[column] = df[column].map(str)
-
 df = df.sample(frac=1).reset_index(drop=True)
 
 train_set = df.iloc[0:600]

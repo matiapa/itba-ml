@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 from decision_tree.attribute import Attribute
 from decision_tree.utils import srange
 
