@@ -1,11 +1,14 @@
+import sys
+sys.path.append("..")
+sys.path.append("../..")
+
 import pandas as pd
 import seaborn as sn
-import sys
+
 from matplotlib import pyplot as plt
-sys.path.append("..")
 from decision_tree.random_forest import random_forest
 from decision_tree.utils import precision, cross_validation
-from main.attributes import attributes, target_attr
+from german_data.attributes import attributes, target_attr
 
 
 def metric_to_percent(metric, total):
@@ -30,7 +33,7 @@ def create_confusion_matrix(metrics, total, name='confusion_matrix', title='Matr
 
 
 def algorithms_confusion_matrix_analysis():
-    df = pd.read_csv('../data/german_credit_proc.csv', dtype=object)
+    df = pd.read_csv('in//german_credit_proc.csv', dtype=object)
     df = df.sample(frac=1).reset_index(drop=True)
     k = 10
     max_depth = 3
@@ -95,11 +98,8 @@ def algorithms_confusion_matrix_analysis():
     create_confusion_matrix(metrics['random_forest'], len(test_set), name='random_forest_matrix', title='Matriz de Confusión: Random Forest')
 
 
-algorithms_confusion_matrix_analysis()
-
-
 def min_samples_analysis():
-    df = pd.read_csv('../data/german_credit_proc.csv', dtype=object)
+    df = pd.read_csv('in//german_credit_proc.csv', dtype=object)
     min_samples = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     k = 10
 
@@ -120,12 +120,9 @@ def min_samples_analysis():
     plt.show()
 
 
-# min_samples_analysis()
-
-
 def tree_height_precision():
     max_depth = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    df = pd.read_csv('../data/german_credit_proc.csv', dtype=object)
+    df = pd.read_csv('in//german_credit_proc.csv', dtype=object)
     df = df.sample(frac=1).reset_index(drop=True)
     k = 10
 
@@ -147,12 +144,9 @@ def tree_height_precision():
     plt.show()
 
 
-# tree_height_precision()
-
-
 def cross_validation_analysis():
     k = [4, 5, 6, 7, 8, 9, 10, 11]
-    df = pd.read_csv('../data/german_credit_proc.csv', dtype=object)
+    df = pd.read_csv('in//german_credit_proc.csv', dtype=object)
     df = df.sample(frac=1).reset_index(drop=True)
     precisions = []
 
@@ -169,5 +163,10 @@ def cross_validation_analysis():
     plt.show()
 
 
+algorithms_confusion_matrix_analysis()
+
 # cross_validation_analysis()
 
+# tree_height_precision()
+
+# min_samples_analysis()
