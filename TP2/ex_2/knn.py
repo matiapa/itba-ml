@@ -92,5 +92,4 @@ list_of_data = list_of_data.to_numpy()
 #257 es un numero primo, así que redondeemos a 258. Los divisores son: 1,2,3,6,43,86,129,258. 
 #tiene sentido probar con k de 3,6,43,86. mas o menos de eso es demasiado chico o grande. 
 train_set, test_set = divide_test_train(list_of_data, 43, 0)
-
-accuracy = main(train_set, test_set, 6, "normal")
+accuracy = main(train_set, test_set, 10, "weighted")
