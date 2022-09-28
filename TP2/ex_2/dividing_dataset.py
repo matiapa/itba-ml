@@ -1,5 +1,3 @@
-from parsing import parsing_file
-
 def divide_test_train(data, k, test_block_index):
    #divide data into train and test set. 
    #k is the block size, and block number is the number of the block to be used as test set
@@ -19,9 +17,3 @@ def divide_test_train(data, k, test_block_index):
             train_indexes.append(i)
 
     return train_set, test_set
-
-
-
-
-
-
