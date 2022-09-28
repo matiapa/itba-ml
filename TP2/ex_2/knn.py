@@ -23,6 +23,7 @@ def evaluate(train_set, test_set, k, which_knn):
         nearest_neighbors = get_nearest_neighbors(filtered_train_set, test_set[i], k)
 
         #decide which function to call
+        prediction = 0
         if which_knn == "normal":
             prediction = normal_knn(nearest_neighbors)
         if which_knn == "weighted":
