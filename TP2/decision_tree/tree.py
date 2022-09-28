@@ -87,40 +87,9 @@ class DecisionTree:
 
         self.__draw_node(self.root, graph)
 
-        graph.render('out/'+filename, format='png', cleanup=True)
+        graph.render('out/' + filename, format='png', cleanup=True)
 
     # -------------------------------------------------------------
-
-    # def __trim_branch(self, root: Node, df: pd.DataFrame, target_attr: Attribute) -> Node:
-    #     if type(root) is TerminalNode:
-    #         return root
-    #
-    #     temp_tree = DecisionTree(None, None)
-    #     temp_tree.root = root
-    #     untrimmed_corrects = 0
-    #
-    #     for _, sample in df.iterrows():
-    #         sample = sample.to_dict()
-    #         prediction = temp_tree.evaluate(sample)
-    #
-    #         if prediction == sample[target_attr.label]:
-    #             untrimmed_corrects += 1
-    #
-    #     mode = df[target_attr.label].mode()[0]
-    #     trimmed_corrects = len(df[df[target_attr.label] == mode])
-    #
-    #     if trimmed_corrects > untrimmed_corrects:
-    #         return TerminalNode(value=mode)
-    #
-    #     else:
-    #         new_children = {}
-    #
-    #         for attr_value, child in root.children:
-    #             new_child = self.__trim_branch(child, df[df[target_attr.label] == attr_value], target_attr)
-    #             new_children[attr_value] = new_child
-    #         root.children = new_children
-    #
-    #         return root
 
     def __trim_branch(self, root: Node, df: pd.DataFrame, target_attr: Attribute) -> Node:
 
@@ -152,3 +121,16 @@ class DecisionTree:
 
     def trim(self, df: pd.DataFrame, target_attr: Attribute):
         self.root = self.__trim_branch(self.root, df, target_attr)
+
+    def __get_node_amount(self, node: Node) -> int:
+        if type(node) is TerminalNode:
+            return 1
+
+        amount = 1
+        for child in node.children.values():
+            amount += self.__get_node_amount(child)
+
+        return amount
+
+    def get_node_amount(self) -> int:
+        return self.__get_node_amount(self.root)
