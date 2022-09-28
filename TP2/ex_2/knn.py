@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 
-def main(train_set, test_set, k, which_knn):
+def evaluate(train_set, test_set, k, which_knn):
     #which knn can be two values: normal or weighted
 
     #return the accuracy of the knn algorithm
@@ -31,10 +31,7 @@ def main(train_set, test_set, k, which_knn):
         if int(prediction) == int(test_set[i][5]):
             correct_predictions += 1
 
-    accuracy = correct_predictions / len(test_set)
-    print("accuracy: " + str(accuracy))
-
-    return accuracy
+    return correct_predictions / len(test_set)
 
 
 def normal_knn(nearest_neighbors):
@@ -83,14 +80,3 @@ def get_nearest_neighbors(filtered_train_set, test_point, k):
         nearest_neighbors.append(filtered_train_set[distances[i][1]])
     
     return nearest_neighbors
-
-
-list_of_data = pd.read_csv('reviews_sentiment_parsed.csv', sep=';')
-list_of_data.sample(frac=1).reset_index(drop=True)
-list_of_data = list_of_data.to_numpy()
-
-#257 es un numero primo, así que redondeemos a 258. Los divisores son: 1,2,3,6,43,86,129,258. 
-#tiene sentido probar con k de 3,6,43,86. mas o menos de eso es demasiado chico o grande. 
-train_set, test_set = divide_test_train(list_of_data, 43, 0)
-
-accuracy = main(train_set, test_set, 6, "normal")
