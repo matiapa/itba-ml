@@ -1,8 +1,7 @@
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 
 class SimplePerceptron():
+    
     def __init__(self, input_size, learning_rate=0.01):
         self.weights = np.zeros(input_size + 1)
         self.learning_rate = learning_rate
@@ -48,8 +47,3 @@ class SimplePerceptron():
             activation = self._activation(exitation)
             error += (label - activation) ** 2
         return error
-
-
-
-
-

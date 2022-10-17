@@ -21,6 +21,3 @@ class SVM:
 
     def evaluate(self, inputs):
         return 1 if np.dot(self.weight, inputs) + self.b >= 0 else -1
-
-
-

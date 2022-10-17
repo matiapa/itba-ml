@@ -1,13 +1,28 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def create_dataset(size=50, max=0.5):
-    data = np.random.rand(size, 2) * max
-    labels = np.where(np.sum(data, axis=1) > max, 1, -1)
-    with open('data.csv', 'w') as f:
-        f.write('x,y,class\n')
+
+def create_dataset(size=50, max=0.5, dist=0.025):
+    f = open('data.csv', 'w')
+    f.write('x,y,class\n')
+
+    actual_size = 0
+    while True:
+        data = np.random.rand(size, 2) * max
         for i in range(size):
-            f.write(f'{data[i,0]},{data[i,1]},{labels[i]}\n')
+            v = data[i,0] + data[i,1]
+
+            if v > max+dist:
+                f.write(f'{data[i,0]},{data[i,1]},{1}\n')
+                actual_size += 1
+            elif v < max-dist:
+                f.write(f'{data[i,0]},{data[i,1]},{-1}\n')
+                actual_size += 1
+            
+            if actual_size == size:
+                f.close()
+                return
+
 
 def plot_dataset():
     data = np.genfromtxt('data.csv', delimiter=',', skip_header=1)
@@ -17,6 +32,7 @@ def plot_dataset():
     plt.scatter(class2[:, 0], class2[:, 1], marker='x', c='blue', label='-1')
     plt.legend()
     plt.savefig('points.png')
+
 
 def plot_results(data):
     errors = data[data['prediction'] != data['class']]
@@ -31,6 +47,7 @@ def plot_results(data):
     plt.plot(x, y, c='black')
     plt.legend()
     plt.show()
+
 
 # create_dataset(size=100)
 # plot_dataset()
