@@ -28,15 +28,21 @@ def ej1():
 def ej3():
     df = pd.read_csv('data.csv')
     df = df.sample(frac=1).reset_index(drop=True) # shuffle data
-    train_set = df[20:]
-    test_set = df[:20]
+    train_set = df[:80]
+    test_set = df[80:]
 
     X = train_set[['x', 'y']].values
     labels = train_set['class'].values
 
-    svm = SVM(C=0.2, input_size=2, b=1)
+    svm = SVM(C=0.5, input_size=2, b=0)
     svm.train(X, labels)
-    print(svm.weight)
+    print("Weights: ", svm.weights)
+    print("B: ", svm.b)
+
+    # graph the line that separates the two classes svm.weights[0] * x + svm.weights[1] * y + svm.b = 0
+    x = np.linspace(0, 0.5, 100)
+    y = (-svm.weights[0] * x + svm.b) / svm.weights[1]
+    plt.plot(x, y, c='orange')
 
     test_set['prediction'] = test_set.apply(lambda row: svm.evaluate(row[['x', 'y']].values), axis=1)
 
