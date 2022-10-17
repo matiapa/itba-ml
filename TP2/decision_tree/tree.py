@@ -23,21 +23,22 @@ class DecisionTree:
             return TerminalNode(value=df[target_attr.label].mode()[0])
 
         else:
-            # gains = map(lambda a: a.get_gain(df, target_attr), attributes)
             gains = {}
             for attribute in attributes:
                 gains[attribute] = attribute.get_gain(df, target_attr)
 
-            best_attr = attributes[np.argmax(gains)]
+            best_attr = max(gains, key=gains.get)
 
             newNode = AttributeNode(attribute=best_attr)
+            remaining_attributes = list(attributes)
+            remaining_attributes.remove(best_attr)
 
             for value in best_attr.values:
-                remaining_attributes = list(attributes)
-                remaining_attributes.remove(best_attr)
+                subtree = self.__build_tree(df[df[newNode.attribute.label] == value], remaining_attributes, target_attr, d + 1)
 
-                subtree = self.__build_tree(df[df[best_attr.label] == value], remaining_attributes, target_attr, d + 1)
 
+                if type(subtree) is TerminalNode and subtree.value == '?':
+                    subtree = TerminalNode(value=df[target_attr.label].mode()[0])
                 newNode.children[value] = subtree
 
             return newNode
