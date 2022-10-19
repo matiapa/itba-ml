@@ -54,4 +54,6 @@ def plot_results(data, file_name='results'):
     plt.scatter(errors['x'], errors['y'], marker='1', c='green', label='wrong')
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05), ncol=3, fancybox=True, shadow=True)
     plt.savefig('out/'+file_name+'.png')
+    plt.xlim(0, 5)
+    plt.ylim(0, 5)
     plt.show()
