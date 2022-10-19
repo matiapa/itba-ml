@@ -10,22 +10,23 @@ class SimplePerceptron():
     def predict(self, x, bias):
         x = np.insert(x, 0, bias) # add bias
         u = self._exitation(x, weights=self.min_weights)
-        return 1 if u >= 0 else -1
+        return self._activation(u)
 
-    def train(self, training_inputs, labels, bias):
+    def train(self, training_inputs, labels, bias, epochs=10):
         error = 1
         min_error = 2 * len(training_inputs)
-        for inputs, label in zip(training_inputs, labels):
-            inputs = np.insert(inputs, 0, bias) # add bias
-            exitation = self._exitation(inputs)
-            activation = self._activation(exitation)
-            delta_w = self._new_weight(label, activation, inputs)
-            self.weights += delta_w
+        for _ in range(epochs):
+            for inputs, label in zip(training_inputs, labels):
+                inputs = np.insert(inputs, 0, bias) # add bias
+                exitation = self._exitation(inputs)
+                activation = self._activation(exitation)
+                delta_w = self._new_weight(label, activation, inputs)
+                self.weights += delta_w
 
-            error = self.error(training_inputs, labels, bias)
-            if (error < min_error):
-                min_error = error
-                self.min_weights = self.weights
+                error = self.error(training_inputs, labels, bias)
+                if (error < min_error):
+                    min_error = error
+                    self.min_weights = self.weights
 
 
     def _new_weight(self, label, prediction, inputs):
@@ -39,11 +40,11 @@ class SimplePerceptron():
     def _activation(self, value):
         return 1 if value >= 0 else -1
 
-    def error(self, inputs, labels, bias):
+    def error(self, inputs, labels, bias, use_min_weights=False):
         error = 0
         for inputs, label in zip(inputs, labels):
             inputs = np.insert(inputs, 0, bias)
-            exitation = self._exitation(inputs)
+            exitation = self._exitation(inputs, weights=self.min_weights if use_min_weights else self.weights)
             activation = self._activation(exitation)
             error += (label - activation) ** 2
         return error
