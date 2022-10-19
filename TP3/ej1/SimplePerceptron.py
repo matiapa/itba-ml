@@ -12,30 +12,21 @@ class SimplePerceptron():
         u = self._exitation(x, weights=self.min_weights)
         return self._activation(u)
 
-    def train(self, training_inputs, labels, bias, iterations=1000, limit_error=0.01):
-
-        self.errors_per_iteration = []
-
+    def train(self, training_inputs, labels, bias, epochs=10):
         error = 1
         min_error = 2 * len(training_inputs)
-        for i in range(iterations):
-            idx = np.random.randint(0, len(training_inputs))
-            inputs = training_inputs[idx]
-            label = labels[idx]
+        for _ in range(epochs):
+            for inputs, label in zip(training_inputs, labels):
+                inputs = np.insert(inputs, 0, bias) # add bias
+                exitation = self._exitation(inputs)
+                activation = self._activation(exitation)
+                delta_w = self._new_weight(label, activation, inputs)
+                self.weights += delta_w
 
-            inputs = np.insert(inputs, 0, bias)
-            exitation = self._exitation(inputs)
-            activation = self._activation(exitation)
-            delta_w = self._new_weight(label, activation, inputs)
-            self.weights += delta_w
-
-            error = self.error(training_inputs, labels, bias)
-            self.errors_per_iteration.append(error)
-            if (error < min_error):
-                min_error = error
-                self.min_weights = self.weights
-            if (error < limit_error):
-                break
+                error = self.error(training_inputs, labels, bias)
+                if (error < min_error):
+                    min_error = error
+                    self.min_weights = self.weights
 
 
     def _new_weight(self, label, prediction, inputs):
@@ -55,5 +46,5 @@ class SimplePerceptron():
             inputs = np.insert(inputs, 0, bias)
             exitation = self._exitation(inputs, weights=self.min_weights if use_min_weights else self.weights)
             activation = self._activation(exitation)
-            error += activation != label
-        return error / len(inputs)
+            error += (label - activation) ** 2
+        return error
