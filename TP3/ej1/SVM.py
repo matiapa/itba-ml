@@ -1,5 +1,5 @@
 import numpy as np
-import pandas as pd
+from tqdm import tqdm
 
 class SVM:
     def __init__(self, C, input_size, b, Aw, Ab, k):
@@ -19,7 +19,8 @@ class SVM:
             f = open("error.csv", "w")
             f.write("error,iteration\n")
 
-        for i in range(iter):
+        for i in tqdm(range(iter)):
+
             idx = np.random.randint(0, len(training_inputs))
             x = training_inputs[idx]
             y = labels[idx]
