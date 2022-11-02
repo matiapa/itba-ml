@@ -16,11 +16,11 @@ df = pd.read_csv('data/dataset.csv')
 X_train, X_test, y_train, y_test = train_test_split(df.drop(["label"], axis=1), df["label"], test_size=0.3)
 
 
-def accuracy_vs_c_vs_k():
+def accuracy_vs_c_k():
     # Define hyperparameters
 
     c_vals = [0.1, 1, 10]
-    kernels = ['poly', 'rbf']
+    kernels = ['poly', 'rbf', 'linear']
     labels = ['vaca', 'pasto', 'cielo']
 
     for k in kernels:
@@ -50,6 +50,39 @@ def accuracy_vs_c_vs_k():
             plt.title(f'C={c}, K={k}')
 
             plt.show()
+
+def accuracy_vs_gamma():
+    # Define hyperparameters
+
+    g_vals = [1e-4, 1e-5, 1e-3]
+    labels = ['vaca', 'pasto', 'cielo']
+
+    for g in g_vals:
+        # Train the SVM model
+
+        print(f'Training with G={g}...')
+
+        clf = svm.SVC(kernel='rbf', C=10, gamma=g)
+
+        clf.fit(X_train, y_train)
+
+        # Evaluate it
+
+        print('Evaluating...')
+
+        y_pred = clf.predict(X_test)
+
+        conf_mat = metrics.confusion_matrix(y_test, y_pred, labels=labels)
+
+        accuracy = metrics.accuracy_score(y_test, y_pred)
+
+        print(f'Accuracy: {accuracy}')
+
+        sns.heatmap(data=conf_mat, xticklabels=labels, yticklabels=labels, annot=True, fmt='g')
+
+        plt.title(f'Gamma={g}')
+
+        plt.show()
 
 
 def full_image_plot(img_path):
@@ -90,4 +123,5 @@ def full_image_plot(img_path):
 
     plt.show()
 
-full_image_plot('data/imagen3.jpg')
+# full_image_plot('data/imagen3.jpg')
+accuracy_vs_gamma()
