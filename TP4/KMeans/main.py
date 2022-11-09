@@ -6,7 +6,6 @@ def variation(classes):
     class_variation = {}
     for c in range(len(classes)):
         sum = 0
-        # get pairs of points
         for i in range(len(classes[c])):
             for j in range(i+1, len(classes[c])):
                 row1 = classes[c][i][:-1]
@@ -18,7 +17,6 @@ def variation(classes):
 
         class_variation[c] = sum
 
-    # get the sum of all variations
     sum = 0
     for c in class_variation:
         sum += class_variation[c]
