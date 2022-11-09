@@ -3,13 +3,8 @@ import pandas as pd
 df = pd.read_csv('data/movie_data.csv', sep=';')
 df_proc = df.copy()
 
-# Clean genres
-genres = df['genres'].unique()
-genre_index = {genre: i for i, genre in enumerate(genres)}
-df_proc['genres'] = df['genres'].map(genre_index)
-
 # Clean columns
-df_proc = df_proc.drop(columns=['original_title', 'overview', 'release_date'])
+df_proc = df_proc.drop(columns=['original_title', 'overview', 'release_date', 'genres'])
 imdb_id_index = df_proc.columns.get_loc('imdb_id')
 cols = df_proc.columns.tolist()
 cols = cols[2:3] + cols[0:2] + cols[3:]
