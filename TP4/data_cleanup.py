@@ -3,24 +3,22 @@ import pandas as pd
 df = pd.read_csv('data/movie_data.csv', sep=';')
 df_proc = df.copy()
 
+# Filter Genres
+df_proc = df_proc[df_proc['genres'].isin(['Action', 'Comedy', 'Drama'])]
+
 # Clean columns
-df_proc = df_proc.drop(columns=['original_title', 'overview', 'release_date'])
+df_proc = df_proc.drop(columns=['original_title', 'overview', 'release_date', 'genres'])
 imdb_id_index = df_proc.columns.get_loc('imdb_id')
 cols = df_proc.columns.tolist()
 cols = cols[2:3] + cols[0:2] + cols[3:]
 df_proc = df_proc[cols]
-
-# Clean Genres
-genres = df['genres'].unique()
-genre_index = {genre:i for i, genre in enumerate(genres)}
-df_proc['genres'] = df['genres'].map(genre_index)
 
 # Normalize columns
 cols = df_proc.columns
 for col in df_proc.columns:
     if col == 'imdb_id':
         continue
-    df_proc[col] = (df_proc[col] - df_proc[col].min()) / (df_proc[col].max() - df_proc[col].min())
+    df_proc[col] = (df_proc[col] - df_proc[col].mean()) / df_proc[col].std()
 
 # Clean rows with nan values with mode of column
 for col in df_proc.columns:
