@@ -1,0 +1,2 @@
+Kohonen: Saco el genero y clasifico en base a la moda
+Generos: Action, comedy y drama

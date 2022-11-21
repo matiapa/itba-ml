@@ -7,8 +7,7 @@ df_proc = df.copy()
 df_proc = df_proc[df_proc['genres'].isin(['Action', 'Comedy', 'Drama'])]
 
 # Clean columns
-df_proc = df_proc.drop(columns=['original_title', 'overview', 'release_date', 'genres'])
-imdb_id_index = df_proc.columns.get_loc('imdb_id')
+df_proc = df_proc.drop(columns=['genres', 'original_title', 'overview', 'release_date', 'production_companies', 'popularity'])
 cols = df_proc.columns.tolist()
 cols = cols[2:3] + cols[0:2] + cols[3:]
 df_proc = df_proc[cols]
@@ -16,13 +15,13 @@ df_proc = df_proc[cols]
 # Normalize columns
 cols = df_proc.columns
 for col in df_proc.columns:
-    if col == 'imdb_id':
+    if col == 'imdb_id' or col == 'genres':
         continue
     df_proc[col] = (df_proc[col] - df_proc[col].mean()) / df_proc[col].std()
 
 # Clean rows with nan values with mode of column
 for col in df_proc.columns:
-    if col == 'imdb_id':
+    if col == 'imdb_id' or col == 'genres':
         continue
     df_proc[col] = df_proc[col].fillna(df_proc[col].mode()[0])
 
