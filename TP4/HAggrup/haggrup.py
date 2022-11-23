@@ -21,54 +21,47 @@ class HAggrup:
 
         print('Calculating initial distances...')
 
-        min_dist = float('inf')
-        g1, g2 = None, None
-        
+        dists = []
         for i in tqdm(range(0, len(X))):
             for j in range(i+1, len(X)):
                 dist = groups[i].dist(groups[j])
-                if dist < min_dist:
-                    min_dist = dist
-                    g1, g2 = groups[i], groups[j]
+                dists.append((groups[i], groups[j], dist))
 
         # Iterate until only one group is left
 
         while len(groups) > 1:
             print(len(groups))
 
-            # print('Groups')
-            # print(groups)
-
-            # print(f'Min dist - {g1p}-{g2p}: {min_dist}')
-
-            # print('--------------------')
-
             # Store current aggrupation
 
             self.aggrupations.append(groups.copy())
 
-            # Remove the nearest groups
+            # Find the min group distance
 
-            print(groups)
-            print(g1)
-            print(g2)
+            g1, g2, _ = min(dists, key = lambda d : d[2])
 
-            groups.remove(g1)
-            groups.remove(g2)
+            # print(groups)
+            # print(g1)
+            # print(g2)
+            # print('-------------')
 
-            # Add the new joined group
+            # Remove the groups and their associated distances
+
+            groups = [g for g in groups if g!=g1 and g!=g2]
+
+            dists = [d for d in dists if d[0] not in [g1,g2] and d[1] not in [g1,g2]]
+
+            # Create a new group by joining them
 
             new_group = g1.join(g2)
 
-            groups.append(new_group)
+            # Add the new group and its distances
 
-            # Update the minimum distance
+            groups.append(new_group)
 
             for i in range(len(groups) - 1):
                 dist = new_group.dist(groups[i])
-                if dist < min_dist:
-                    min_dist = dist
-                    g1, g2 = new_group, groups[i]
+                dists.append((new_group, groups[i], dist))
     
         self.aggrupations.append(groups)
 
